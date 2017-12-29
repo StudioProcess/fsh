@@ -1,16 +1,17 @@
 {
-  "name": "code",
-  "version": "1.0.0",
+  "name": "fsh",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "live-server"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Process <contact@process.studio> (https://process.studio),
+  "license": "AGPL-3.0",
   "dependencies": {
     "live-server": "^1.2.0",
     "three": "^0.88.0",
     "three.mod": "git+https://github.com/a-jie/threejs-geometry-modifiers.git"
   }
+  "private": true
 }
