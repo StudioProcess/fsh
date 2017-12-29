@@ -6,12 +6,12 @@
   "scripts": {
     "start": "live-server"
   },
-  "author": "Process <contact@process.studio> (https://process.studio),
+  "author": "Process <contact@process.studio> (https://process.studio)",
   "license": "AGPL-3.0",
   "dependencies": {
     "live-server": "^1.2.0",
     "three": "^0.88.0",
     "three.mod": "git+https://github.com/a-jie/threejs-geometry-modifiers.git"
-  }
+  },
   "private": true
 }
