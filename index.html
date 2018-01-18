@@ -83,11 +83,19 @@
     var lambert = new THREE.MeshPhongMaterial( {
       color: 0x888888,
       specular: 0x111111,
-      shininess: 10, //1000
+      shininess: 40, //1000
       flatShading: true,
       side: THREE.DoubleSide,
-      wireframe: false
+      wireframe: false,
+      opacity: 0.5,
+      transparent: true,
+      map: THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg"),
+      displacementMap: THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg"),
+      displacementScale: 500
     } );
+
+    // lambert.map = THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg");
+    // lambert.displacementMap = THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg");
 
     function generateGeometry() {
       objLoader = new THREE.OBJLoader();
