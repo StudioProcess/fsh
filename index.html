@@ -48,7 +48,7 @@
     // light.position.set( 0, 0, 0 );
     // scene.add( light );
 
-    var directionalLight = new THREE.DirectionalLight( 0xed1c24, 2.125 ); // rot
+    var directionalLight = new THREE.DirectionalLight( 0xed1c24, 5.125 ); // rot
     directionalLight.position.x = Math.random() - 0.5;
     directionalLight.position.y = Math.random() - 0.5;
     directionalLight.position.z = Math.random() - 0.5;
@@ -87,7 +87,7 @@
       flatShading: true,
       side: THREE.DoubleSide,
       wireframe: false,
-      opacity: 0.5,
+      opacity: 0.8,
       transparent: true,
       map: THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg"),
       displacementMap: THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg"),
@@ -120,6 +120,10 @@
       plane.rotation.y += 0.0001;
 
       var time = Date.now();
+
+      // lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
+      lambert.displacementScale = Math.sin( time * 0.00005 + 2 ) * 100;
+      plane.needsUpdate = true; //
 
       directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
       // directionalLight.position.y += Math.sin( time * 0.0011 + 3 ) * 0.01;
