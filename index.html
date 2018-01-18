@@ -1,203 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Document</title>
   <style>
-      canvas {
-        width: 100%;
-        height: 100%
-      }
-      html, body { margin:0; padding:0; }
-      canvas { display:block; }
-    </style>
+    canvas {
+      width: 100%;
+      height: 100%
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
+
 <body>
   <script src="node_modules/three/build/three.js"></script>
   <script src="js/ImprovedNoise.js"></script>
   <script src="js/controls/OrbitControls.js"></script>
-  <script src="node_modules/three.mod/dist/modifier.js"></script>
+  <!-- <script src="node_modules/three.mod/dist/modifier.js"></script> -->
+  <script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 
   <script>
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    var controls = new THREE.OrbitControls( camera );
-    var renderer = new THREE.WebGLRenderer( { antialias: true } );
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var controls = new THREE.OrbitControls(camera);
+    var renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+    var plane;
+    var material;
+    var geometry;
 
-    var modifier, twist;
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setClearColor( 0xcccccc, 1 );
-    document.body.appendChild( renderer.domElement );
+    // var light = new THREE.HemisphereLight( 0xffffbb, 0xFFFFFF, 1 );
+    // scene.add( light );
 
-    // PlaneGeometry(width, height, widthSegments, heightSegments)
-    var geometry = new THREE.PlaneGeometry( 500, 500, 100, 100 );
-    // this material causes a mesh to use colors assigned to vertices
-    // different colors at face vertices create gradient effect
-    var meshPhongMaterial = new THREE.MeshPhongMaterial( {
-      color: 0x000000,
-      specular: 0xffffff,
+    // var light = new THREE.PointLight( 0xff0000, 1000, 1000 );
+    // light.position.set( 0, 0, 0 );
+    // scene.add( light );
+
+    var directionalLight = new THREE.DirectionalLight( 0xed1c24, 2.125 ); // rot
+    directionalLight.position.x = Math.random() - 0.5;
+    directionalLight.position.y = Math.random() - 0.5;
+    directionalLight.position.z = Math.random() - 0.5;
+    directionalLight.position.normalize();
+    var directionalLight2 = new THREE.DirectionalLight( 0xc83e81, 2.125 ); // pink
+    directionalLight2.position.x = Math.random() - 0.5;
+    directionalLight2.position.y = Math.random() - 0.5;
+    directionalLight2.position.z = Math.random() - 0.5;
+    directionalLight2.position.normalize();
+    var directionalLight3 = new THREE.DirectionalLight( 0x701655, 1.625 ); // violett
+    directionalLight3.position.x = Math.random() - 0.5;
+    directionalLight3.position.y = Math.random() - 0.5;
+    directionalLight3.position.z = Math.random() - 0.5;
+    directionalLight3.position.normalize();
+    var directionalLight4 = new THREE.DirectionalLight( 0x8781bd, 1.525 ); // flieder
+    directionalLight4.position.x = Math.random() - 0.5;
+    directionalLight4.position.y = Math.random() - 0.5;
+    directionalLight4.position.z = Math.random() - 0.5;
+    directionalLight4.position.normalize();
+    scene.add( directionalLight );
+    scene.add( directionalLight2 );
+    scene.add( directionalLight3 );
+    scene.add( directionalLight4 );
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xcccccc, 1);
+    document.body.appendChild(renderer.domElement);
+    camera.position.z = 20;
+
+    generateGeometry();
+    // var lambert = new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false});
+    var lambert = new THREE.MeshPhongMaterial( {
+      color: 0x888888,
+      specular: 0x111111,
       shininess: 10, //1000
       flatShading: true,
       side: THREE.DoubleSide,
       wireframe: false
     } );
-    /**
-    new THREE.MeshPhongMaterial(
-      { color: 0x000000, specular: 0xffffff, emissive: 0xff0000, shininess: 100,
-        opacity: 0.9, transparent: true, side: THREE.DoubleSide,
-        wireframe: false }
-    );*/
-    var meshMaterial = new THREE.MeshBasicMaterial( {
-      color: 0xffffff, vertexColors: THREE.VertexColors, side: THREE.DoubleSide, wireframe: false
-    } );
-    // var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, wireframe:true} );
 
-    camera.position.z = 450;
-
-    var plane = new THREE.Mesh( geometry, meshPhongMaterial );
-    // faces are indexed using characters
-	  var faceIndices = [ 'a', 'b', 'c'];
-
-    for ( var i = 0; i < plane.geometry.faces.length; i++ ) {
-		  face  = plane.geometry.faces[ i ];
-		  // determine if current face is a tri or a quad
-		  numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
-
-      // assign color to each vertex of current face
-		  for( var j = 0; j < numberOfSides; j++ ) {
-			  vertexIndex = face[ faceIndices[ j ] ];
-
-        // initialize color variable
-			  color = new THREE.Color( 0x000000 );
-        //color = new THREE.Color("rgb(127 + 127 * Math.sin(i * 0.01), 127 + 127 * Math.sin(i * 0.011), 127 + 127 * Math.sin(i * 0.012))");
-        //if(vertexIndex==0) { color.setHex  (0xffffff) * i; }
-        //if(vertexIndex==1) { color.setHex  (0xffffff) * i; }
-        //if(vertexIndex==2) { color.setHex  (0xffffff) * i; }
-
-        //color.setHex  ((0x000000) + i);
-
-        color = new THREE.Color( 0x000000 + map_range(i, 0, plane.geometry.faces.length, 0, 250));
-			  plane.geometry.faces[ i ].vertexColors[ j ] = color;
-		  }
-	  }
-
-    function map_range(value, low1, high1, low2, high2) {
-      return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-    }
-
-    function getRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+    function generateGeometry() {
+      objLoader = new THREE.OBJLoader();
+      objLoader.setPath( 'objects/' );
+      objLoader.load( 'plane5-1.obj', function ( object ) {
+        object.traverse(function(child) {
+          if (child instanceof THREE.Mesh){
+              child.material = lambert;
+          }
+        });
+        plane = object;
+        scene.add( object );
+      } );
     }
 
 
-    generateNoisedMesh();
-    distortMesh();
+    scene.add(plane);
 
-    scene.add( new THREE.AmbientLight( 0xFFFFFF, 0.1 ) );
+    var animate = function() {
+      requestAnimationFrame(animate);
+      plane.rotation.x += 0.0001;
+      plane.rotation.y += 0.0001;
 
-    var directionalLight = new THREE.DirectionalLight( 0xfa5864, 1.125 );
-		directionalLight.position.x = Math.random() - 0.5;
-		directionalLight.position.y = Math.random() - 0.5;
-		directionalLight.position.z = Math.random() - 0.5;
-		directionalLight.position.normalize();
+      var time = Date.now();
 
-    var directionalLight2 = new THREE.DirectionalLight( 0xc5c4fb, 1.125 );
-		directionalLight2.position.x = Math.random() - 0.5;
-		directionalLight2.position.y = Math.random() - 0.5;
-		directionalLight2.position.z = Math.random() - 0.5;
-		directionalLight2.position.normalize();
+      directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
+      // directionalLight.position.y += Math.sin( time * 0.0011 + 3 ) * 0.01;
+      // directionalLight.position.z += Math.sin( time * 0.0012 + 4 ) * 0.01;
 
-    var directionalLight3 = new THREE.DirectionalLight( 0x351f2a, 1.125 );
-		directionalLight3.position.x = Math.random() - 0.5;
-		directionalLight3.position.y = Math.random() - 0.5;
-		directionalLight3.position.z = Math.random() - 0.5;
-		directionalLight3.position.normalize();
+      // directionalLight2.position.x += Math.sin( time * 0.0011 - 2 ) * 0.01;
+      directionalLight2.position.y += Math.sin( time * 0.0014 - 3 ) * 0.01;
+      // directionalLight2.position.z += Math.sin( time * 0.0011 - 4 ) * 0.01;
 
-    scene.add( directionalLight );
-    scene.add( directionalLight2 );
-    scene.add( directionalLight3 );
+      // directionalLight3.position.x += Math.sin( time * 0.0001 - 5 ) * 0.01;
+      // directionalLight3.position.y += Math.sin( time * 0.0001 - 3 ) * 0.01;
+      directionalLight3.position.z += Math.sin( time * 0.0009 - 4 ) * 0.01;
 
-    scene.add( plane );
+      directionalLight4.position.x += Math.sin( time * 0.0009 - 2 ) * 0.01;
+      // directionalLight4.position.y += Math.sin( time * 0.0011 - 2 ) * 0.01;
+      // directionalLight4.position.z += Math.sin( time * 0.001 - 4 ) * 0.01;
 
-    function distortMesh() {
-      modifier = new ModifierStack(plane);
+      renderer.render(scene, camera);
+    };
 
-      noise = new Noise(Math.sin(Math.random(0, 1))*100);
-      //noise = new Noise(0.1);
-      twist = new Twist(1);
-      var rotationValue = Math.random(0,-1000);
-      var rotationValue2 = Math.random(0,1000);
-      var rotationValue3 = Math.random(0,100);
-
-      twist.vector = new Vector3(rotationValue, rotationValue2, -rotationValue3);
-      modifier.addModifier(noise);
-      modifier.addModifier(twist);
-      plane.geometry.verticesNeedUpdate = true;
-    }
-
-    function generateNoisedMesh() {
-      perlin = new ImprovedNoise(), quality = 30;
-      for(var i = 0; i < plane.geometry.vertices.length; i++){
-
-        // plane.geometry.vertices[i].x =
-        //   Math.abs(
-        //     perlin.noise(
-        //       plane.geometry.vertices[i].x / quality,
-        //       plane.geometry.vertices[i].y / quality,
-        //       plane.geometry.vertices[i].z / quality
-        //     )
-        //     * quality * 1.75
-        //     + Math.random(0, 1)
-        //   );
-        //
-        // plane.geometry.vertices[i].y =
-        //   Math.abs(
-        //     perlin.noise(
-        //       plane.geometry.vertices[i].x / quality,
-        //       plane.geometry.vertices[i].y / quality,
-        //       plane.geometry.vertices[i].z / quality
-        //     )
-        //     * quality * 1.75
-        //     + Math.random(0, 1)
-        //   );
-        plane.geometry.vertices[i].x += Math.random(-0.2, 0.3);
-        plane.geometry.vertices[i].y += Math.random(-0.2, 0.3);
-        plane.geometry.vertices[i].z =
-          Math.abs(
-            perlin.noise(
-              plane.geometry.vertices[i].x / quality,
-              plane.geometry.vertices[i].y / quality,
-              plane.geometry.vertices[i].z / quality
-            )
-            * quality * 1.75
-            * Math.random(-1, 1)
-          );
-
-
-      }
-      geometry.verticesNeedUpdate = true;
-    }
-
-    function animate(time) {
-	    requestAnimationFrame( animate );
-
-      // rotation
-      plane.rotation.x += 0.001;
-			plane.rotation.y += 0.001;
-      // plane.rotation.z += 0.001;
-
-      var zeit = Math.floor(time);
-      // distortMesh();
-      modifier.apply();
-      //geometry.verticesNeedUpdate = true;
-	    renderer.render( scene, camera );
-    }
     animate();
-
   </script>
 
 </body>
+
 </html>
