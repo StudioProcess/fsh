@@ -41,19 +41,19 @@
     var geometry;
 
 
-    // var light = new THREE.HemisphereLight( 0xed1c24, 0xFFFFFF, 0.1 );
-    // scene.add( light );
+    var light = new THREE.HemisphereLight( 0xed1c24, 0xFFFFFF, 1.1 );
+    scene.add( light );
 
     // var light = new THREE.PointLight( 0xff0000, 1000, 1000 );
     // light.position.set( 0, 0, 0 );
     // scene.add( light );
 
-    var directionalLight = new THREE.DirectionalLight( 0xed1c24, 2.125 ); // rot
+    var directionalLight = new THREE.DirectionalLight( 0x26b0ff, 2.125 ); // rot
     directionalLight.position.x = 100;//Math.random() - 0.5;
     directionalLight.position.y = 100;//Math.random() - 0.5;
     directionalLight.position.z = 100;//Math.random() - 0.5;
     directionalLight.position.normalize();
-    var directionalLight2 = new THREE.DirectionalLight( 0xc83e81, 2.125 ); // pink
+    var directionalLight2 = new THREE.DirectionalLight( 0xedff27, 2.125 ); // pink
     directionalLight2.position.x = -100;//Math.random() - 0.5;
     directionalLight2.position.y = -100;//Math.random() - 0.5;
     directionalLight2.position.z = -100;//Math.random() - 0.5;
@@ -69,13 +69,27 @@
     directionalLight4.position.z = -30;//Math.random() - 0.5;
     directionalLight4.position.normalize();
 
+    var spotLight = new THREE.SpotLight( 0xffffff );
+    spotLight.position.set( 1000, 1000, 100 );
+
+    spotLight.castShadow = true;
+
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+
+    spotLight.shadow.camera.near = 500;
+    spotLight.shadow.camera.far = 4000;
+    spotLight.shadow.camera.fov = 30;
+
+    scene.add( spotLight );
+
     scene.add( directionalLight );
     scene.add( directionalLight2 );
     scene.add( directionalLight3 );
     scene.add( directionalLight4 );
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xcccccc, 1);
+    renderer.setClearColor(0x838e95, 1);
     document.body.appendChild(renderer.domElement);
     camera.position.z = 20;
 
@@ -86,24 +100,22 @@
       specular: 0x111111,
       // combine: THREE.MixOperation,
       // reflectivity: 1.5,
-      shininess: 40,//40, //1000
+      shininess: 400,//40, //1000
       flatShading: true,
       side: THREE.DoubleSide,
       wireframe: false,
-      opacity: 0.8,
+      opacity: 0.9,
       transparent: true,
       // map: THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg"),
       displacementMap: THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg"),
-      displacementScale: 0
+      // displacementScale: 1
     } );
 
-    // lambert.map = THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg");
-    // lambert.displacementMap = THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg");
 
     function generateGeometry() {
       objLoader = new THREE.OBJLoader();
       objLoader.setPath( 'objects/' );
-      objLoader.load( 'plane5-1.obj', function ( object ) {
+      objLoader.load( 'plane7-1.obj', function ( object ) {
         object.traverse(function(child) {
           if (child instanceof THREE.Mesh){
               child.material = lambert;
@@ -124,14 +136,16 @@
 
       var time = Date.now();
 
-      lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
-      lambert.displacementScale = Math.sin( time * 0.0001 + 2 ) * 100;
+      light.intensity = Math.sin( time * 0.0001 + 2 );
+
+      // lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
+      lambert.displacementScale = Math.sin( time * 0.0001 + 2 ) * 10;
       plane.needsUpdate = true; //
 
-      directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
-      directionalLight2.position.y += Math.sin( time * 0.0014 - 3 ) * 0.01;
-      directionalLight3.position.z += Math.sin( time * 0.0009 - 4 ) * 0.01;
-      directionalLight4.position.x += Math.sin( time * 0.0009 - 2 ) * 0.01;
+      // directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
+      // directionalLight2.position.y += Math.sin( time * 0.0014 - 3 ) * 0.01;
+      // directionalLight3.position.z += Math.sin( time * 0.0009 - 4 ) * 0.01;
+      // directionalLight4.position.x += Math.sin( time * 0.0009 - 2 ) * 0.01;
 
 
       renderer.render(scene, camera);
