@@ -27,46 +27,73 @@
   <script src="js/ImprovedNoise.js"></script>
   <script src="js/controls/OrbitControls.js"></script>
   <!-- <script src="node_modules/three.mod/dist/modifier.js"></script> -->
+  <script src="node_modules/dat.gui/build/dat.gui.min.js"></script>
   <script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 
   <script>
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    var controls = new THREE.OrbitControls(camera);
-    var renderer = new THREE.WebGLRenderer({
+    let scene = new THREE.Scene();
+    let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    let controls = new THREE.OrbitControls(camera);
+    let renderer = new THREE.WebGLRenderer({
       antialias: true
     });
-    var plane;
-    var material;
-    var geometry;
+
+    let plane;
+    let material, lambert;
+    let geometry;
+
+    let lightRectangleObject1, lightRectangleObject2, lightRectangleObject3, lightRectangleObject4;
+
+    let bgColor, materialShininess, flat, geoDisplacement, wireframes;
+    let lightRectangleWidth = 5;
+    let lightRectangleLength = 5;
+    let lightRectangleHeight = 1;
+    let params = {
+      bgColor: "#646464",
+      materialShininess: 0,
+      flat: true,
+      geoDisplacement: 0,
+      wireframes: false,
+      lightRectangleWidth: 5,
+      lightRectangleLength: 5,
+      lightRectangleHeight: 1
+    };
 
 
-    // var light = new THREE.HemisphereLight( 0xed1c24, 0xFFFFFF, 0.1 );
+    // let light = new THREE.HemisphereLight( 0xed1c24, 0xFFFFFF, 0.1 );
     // scene.add( light );
 
-    // var light = new THREE.PointLight( 0xff0000, 1000, 1000 );
+    // let light = new THREE.PointLight( 0xff0000, 1000, 1000 );
     // light.position.set( 0, 0, 0 );
     // scene.add( light );
 
-    var directionalLight = new THREE.DirectionalLight( 0xed1c24, 2.125 ); // rot
-    directionalLight.position.x = 100;//Math.random() - 0.5;
-    directionalLight.position.y = 100;//Math.random() - 0.5;
-    directionalLight.position.z = 100;//Math.random() - 0.5;
+    // fsp farben:
+    // rot: 0xed1c24
+    // pink: 0xc83e81
+    // violett: 0x701655
+    // flieder: 0x8781bd
+
+
+
+    let directionalLight = new THREE.PointLight( 0xed1c24, 1.0 ); // rot
+    directionalLight.position.x = -params.lightRectangleWidth;//Math.random() - 0.5;
+    directionalLight.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
+    directionalLight.position.z = params.lightRectangleLength;//Math.random() - 0.5;
     directionalLight.position.normalize();
-    var directionalLight2 = new THREE.DirectionalLight( 0xc83e81, 2.125 ); // pink
-    directionalLight2.position.x = -100;//Math.random() - 0.5;
-    directionalLight2.position.y = -100;//Math.random() - 0.5;
-    directionalLight2.position.z = -100;//Math.random() - 0.5;
+    let directionalLight2 = new THREE.PointLight( 0xc83e81, 1.0 ); // pink
+    directionalLight2.position.x = params.lightRectangleWidth;//Math.random() - 0.5;
+    directionalLight2.position.y = -params.lightRectangleHeight;//Math.random() - 0.5;
+    directionalLight2.position.z = -params.lightRectangleLength;//Math.random() - 0.5;
     directionalLight2.position.normalize();
-    var directionalLight3 = new THREE.DirectionalLight( 0x701655, 1.625 ); // violett
-    directionalLight3.position.x = 30;//Math.random() - 0.5;
-    directionalLight3.position.y = 30;//Math.random() - 0.5;
-    directionalLight3.position.z = 30;//Math.random() - 0.5;
+    let directionalLight3 = new THREE.PointLight( 0x701655, 1.0 ); // violett
+    directionalLight3.position.x = params.lightRectangleWidth;//Math.random() - 0.5;
+    directionalLight3.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
+    directionalLight3.position.z = params.lightRectangleLength;//Math.random() - 0.5;
     directionalLight3.position.normalize();
-    var directionalLight4 = new THREE.DirectionalLight( 0x8781bd, 1.525 ); // flieder
-    directionalLight4.position.x = -30;//Math.random() - 0.5;
-    directionalLight4.position.y = -30;//Math.random() - 0.5;
-    directionalLight4.position.z = -30;//Math.random() - 0.5;
+    let directionalLight4 = new THREE.PointLight( 0x8781bd, 1.0 ); // flieder
+    directionalLight4.position.x = -params.lightRectangleWidth;//Math.random() - 0.5;
+    directionalLight4.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
+    directionalLight4.position.z = -params.lightRectangleLength;//Math.random() - 0.5;
     directionalLight4.position.normalize();
 
     scene.add( directionalLight );
@@ -74,36 +101,68 @@
     scene.add( directionalLight3 );
     scene.add( directionalLight4 );
 
+    // corner spheres for light displacement
+    let MARKER_SIZE = 0.5;
+    let mat = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe:false} );
+
+    let geo = new THREE.BoxGeometry( MARKER_SIZE, MARKER_SIZE, MARKER_SIZE );
+
+    lightRectangleObject1 = new THREE.Mesh( geo, mat );
+    lightRectangleObject1.name = 'marker';
+    lightRectangleObject1.position.set(params.lightRectangleWidth, params.lightRectangleHeight, params.lightRectangleLength);
+
+    lightRectangleObject2 = new THREE.Mesh( geo, mat );
+    lightRectangleObject2.name = 'marker2';
+    lightRectangleObject2.position.set(-params.lightRectangleWidth, params.lightRectangleHeight, params.lightRectangleLength);
+
+    lightRectangleObject3 = new THREE.Mesh( geo, mat );
+    lightRectangleObject3.name = 'marker3';
+    lightRectangleObject3.position.set(params.lightRectangleWidth, params.lightRectangleHeight, -params.lightRectangleLength);
+
+    lightRectangleObject4 = new THREE.Mesh( geo, mat );
+    lightRectangleObject4.name = 'marker4';
+    lightRectangleObject4.position.set(-params.lightRectangleWidth, params.lightRectangleHeight, -params.lightRectangleLength);
+
+    scene.add(lightRectangleObject1);
+    scene.add(lightRectangleObject2);
+    scene.add(lightRectangleObject3);
+    scene.add(lightRectangleObject4);
+
+    console.log ( lightRectangleObject1 );
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0xcccccc, 1);
     document.body.appendChild(renderer.domElement);
     camera.position.z = 20;
 
     generateGeometry();
-    // var lambert = new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false});
-    var lambert = new THREE.MeshPhongMaterial( {
-      color: 0x888888,
-      specular: 0x111111,
+
+    lambert = new THREE.MeshStandardMaterial ( {
+      color: 0xffffff,
+      specular: 0xffffff,
       // combine: THREE.MixOperation,
       // reflectivity: 1.5,
       shininess: 40,//40, //1000
       flatShading: true,
       side: THREE.DoubleSide,
       wireframe: false,
-      opacity: 0.8,
-      transparent: true,
+      opacity: 1.0,
+      transparent: false,
+      metalness: 1.0,
+      roughness: 0.5,
       // map: THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg"),
-      displacementMap: THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg"),
+      displacementMap: THREE.ImageUtils.loadTexture("assets/hillshade_subdiv_2_30001.jpg"),
       displacementScale: 0
     } );
 
-    // lambert.map = THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg");
-    // lambert.displacementMap = THREE.ImageUtils.loadTexture("assets/Brick-2399-bump-map.jpg");
+    createGUI();
+
+    // let lambert = new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false});
 
     function generateGeometry() {
       objLoader = new THREE.OBJLoader();
       objLoader.setPath( 'objects/' );
-      objLoader.load( 'plane5-1.obj', function ( object ) {
+      objLoader.load( 'plane_plain.obj', function ( object ) {
         object.traverse(function(child) {
           if (child instanceof THREE.Mesh){
               child.material = lambert;
@@ -112,27 +171,138 @@
         plane = object;
         scene.add( object );
       } );
+
+      // rectangle for light lightRectangle
+
+      //create a blue LineBasicMaterial
+      // var lightRectangleMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+      //
+      // var lightRectangleGeometry = new THREE.Geometry();
+      // lightRectangleGeometry.vertices.push(new THREE.Vector3( lightRectangleWidth, lightRectangleHeight, lightRectangleLength ));
+      // lightRectangleGeometry.vertices.push(new THREE.Vector3( -lightRectangleWidth, lightRectangleHeight, lightRectangleLength ));
+      // lightRectangleGeometry.vertices.push(new THREE.Vector3( lightRectangleWidth, lightRectangleHeight, -lightRectangleLength ));
+      // lightRectangleGeometry.vertices.push(new THREE.Vector3( -lightRectangleWidth, lightRectangleHeight, -lightRectangleLength ));
+      //
+      // var lightRectangleLine = new THREE.Line(geometry, material);
+      //
+      // scene.add( lightRectangleLine );
+      // console.log( lightRectangleLine.geometry );
     }
 
+    function createGUI(){
+      let gui = new dat.GUI();
 
-    scene.add(plane);
+      gui.addColor(params, 'bgColor').onChange(() => {
+        renderer.setClearColor(params.bgColor, 1);
+      });
+      gui.add(params, 'materialShininess', 0, 300).onChange(() => {
+        lambert.shininess = params.materialShininess;
+        lambert.needsUpdate = true;
+      });
+      gui.add(params, 'geoDisplacement', -30, 30).onChange(() => {
+        lambert.displacementScale = params.geoDisplacement;
+        lambert.needsUpdate = true;
+      });
+      gui.add(params, 'flat').onChange(() => {
+        lambert.flatShading = params.flat;
+        lambert.needsUpdate = true;
+      });
+      gui.add(params, 'wireframes').onChange(() => {
+        lambert.wireframe = params.wireframes;
+        lambert.needsUpdate = true;
+      });
+      gui.add(params, 'lightRectangleWidth', 0, 30.0).onChange(() => {
+        lightRectangleWidth = params.lightRectangleWidth;
+        lightRectangleObject1.position.x = params.lightRectangleWidth;
+        lightRectangleObject2.position.x = -params.lightRectangleWidth;
+        lightRectangleObject3.position.x = params.lightRectangleWidth;
+        lightRectangleObject4.position.x = -params.lightRectangleWidth;
+      });
+      gui.add(params, 'lightRectangleLength', 0, 30.0).onChange(() => {
+        lightRectangleLength = params.lightRectangleLength;
+        lightRectangleObject1.position.z = params.lightRectangleLength;
+        lightRectangleObject2.position.z = params.lightRectangleLength;
+        lightRectangleObject3.position.z = -params.lightRectangleLength;
+        lightRectangleObject4.position.z = -params.lightRectangleLength;
+      });
+      gui.add(params, 'lightRectangleHeight', -3.0, 3.0).onChange(() => {
+        lightRectangleHeight = params.lightRectangleHeight;
+        lightRectangleObject1.position.y = params.lightRectangleHeight;
+        lightRectangleObject2.position.y = params.lightRectangleHeight;
+        lightRectangleObject3.position.y = params.lightRectangleHeight;
+        lightRectangleObject4.position.y = params.lightRectangleHeight;
+      });
+    }
 
-    var animate = function() {
+    // console.log( lambert );
+
+    // scene.add( plane );
+
+    let animate = function() {
       requestAnimationFrame(animate);
       // plane.rotation.x += 0.0001;
       // plane.rotation.y += 0.0001;
 
-      var time = Date.now();
+      let time = Date.now();
 
-      lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
-      lambert.displacementScale = Math.sin( time * 0.0001 + 2 ) * 100;
-      plane.needsUpdate = true; //
+      // lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
+      // lambert.displacementScale = Math.sin( time * 0.0001 + 2 ) * 2;
+      // plane.needsUpdate = true; //
 
-      directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
-      directionalLight2.position.y += Math.sin( time * 0.0014 - 3 ) * 0.01;
-      directionalLight3.position.z += Math.sin( time * 0.0009 - 4 ) * 0.01;
-      directionalLight4.position.x += Math.sin( time * 0.0009 - 2 ) * 0.01;
+      // directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
+      // directionalLight2.position.y += Math.sin( time * 0.001 + 2 ) * 0.01;
+      // directionalLight3.position.z += Math.sin( time * 0.001 + 2 ) * 0.01;
+      // directionalLight4.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
 
+      directionalLight.position.x = -lightRectangleWidth;
+      directionalLight.position.y = lightRectangleHeight;
+      directionalLight.position.z = lightRectangleLength;
+
+      directionalLight2.position.x = lightRectangleWidth;
+      directionalLight2.position.y = lightRectangleHeight;
+      directionalLight2.position.z = lightRectangleLength;
+
+      directionalLight3.position.x = -lightRectangleWidth;
+      directionalLight3.position.y = lightRectangleHeight;
+      directionalLight3.position.z = -lightRectangleLength;
+
+      directionalLight4.position.x = lightRectangleWidth;
+      directionalLight4.position.y = lightRectangleHeight;
+      directionalLight4.position.z = -lightRectangleLength;
+
+
+      // directionalLight4.position.x
+      // directionalLight4.position.y
+      // directionalLight4.position.z
+
+      // let newCol = new THREE.Color (
+      //     Math.sin( time * 0.0001 + 0.2 ),
+      //     Math.sin( time * 0.0001 + 0.01 ),
+      //     Math.sin( time * 0.0011 + 0.2 )
+      //   );
+      //
+      // // let newCol2 = new THREE.Color (
+      // //     Math.sin( time * 0.001 + 1.2 ),
+      // //     Math.sin( time * 0.002 + 1.01 ),
+      // //     Math.sin( time * 0.0011 + 1 )
+      // //   );
+      // //
+      // // let newCol3 = new THREE.Color (
+      // //     Math.sin( time * 0.0001 + 0.2 ),
+      // //     Math.sin( time * 0.0003 + 1.01 ),
+      // //     Math.sin( time * 0.0111 + 1 )
+      // //   );
+      // //
+      // // let newCol4 = new THREE.Color (
+      // //     Math.sin( time * 0.0004 + 0.8 ),
+      // //     Math.sin( time * 0.0002 + 1.01 ),
+      // //     Math.sin( time * 0.0001 + 1.01 )
+      // //   );
+
+      // directionalLight.color = newCol;
+      // directionalLight2.color = newCol;
+      // directionalLight3.color = newCol;
+      // directionalLight4.color = newCol;
 
       renderer.render(scene, camera);
     };
