@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Document</title>
+  <title>Light Setup</title>
   <style>
     canvas {
       width: 100%;
@@ -26,7 +26,6 @@
   <script src="node_modules/three/build/three.js"></script>
   <script src="js/ImprovedNoise.js"></script>
   <script src="js/controls/OrbitControls.js"></script>
-  <!-- <script src="node_modules/three.mod/dist/modifier.js"></script> -->
   <script src="node_modules/dat.gui/build/dat.gui.min.js"></script>
   <script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 
@@ -48,6 +47,8 @@
     let lightRectangleWidth = 5;
     let lightRectangleLength = 5;
     let lightRectangleHeight = 1;
+    let lightIntensity = 1;
+    let ambientLightIntensity = 1;
     let params = {
       bgColor: "#646464",
       materialShininess: 0,
@@ -56,16 +57,10 @@
       wireframes: false,
       lightRectangleWidth: 5,
       lightRectangleLength: 5,
-      lightRectangleHeight: 1
+      lightRectangleHeight: 1,
+      lightIntensity: 1,
+      ambientLightIntensity: 1,
     };
-
-
-    // let light = new THREE.HemisphereLight( 0xed1c24, 0xFFFFFF, 0.1 );
-    // scene.add( light );
-
-    // let light = new THREE.PointLight( 0xff0000, 1000, 1000 );
-    // light.position.set( 0, 0, 0 );
-    // scene.add( light );
 
     // fsp farben:
     // rot: 0xed1c24
@@ -73,27 +68,25 @@
     // violett: 0x701655
     // flieder: 0x8781bd
 
-
-
-    let directionalLight = new THREE.PointLight( 0xed1c24, 1.0 ); // rot
-    directionalLight.position.x = -params.lightRectangleWidth;//Math.random() - 0.5;
-    directionalLight.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
-    directionalLight.position.z = params.lightRectangleLength;//Math.random() - 0.5;
+    let directionalLight = new THREE.PointLight( 0xed1c24, params.lightIntensity );
+    directionalLight.position.x = -params.lightRectangleWidth;
+    directionalLight.position.y = params.lightRectangleHeight;
+    directionalLight.position.z = params.lightRectangleLength;
     directionalLight.position.normalize();
-    let directionalLight2 = new THREE.PointLight( 0xc83e81, 1.0 ); // pink
-    directionalLight2.position.x = params.lightRectangleWidth;//Math.random() - 0.5;
-    directionalLight2.position.y = -params.lightRectangleHeight;//Math.random() - 0.5;
-    directionalLight2.position.z = -params.lightRectangleLength;//Math.random() - 0.5;
+    let directionalLight2 = new THREE.PointLight( 0xc83e81, params.lightIntensity );
+    directionalLight2.position.x = params.lightRectangleWidth;
+    directionalLight2.position.y = -params.lightRectangleHeight;
+    directionalLight2.position.z = -params.lightRectangleLength;
     directionalLight2.position.normalize();
-    let directionalLight3 = new THREE.PointLight( 0x701655, 1.0 ); // violett
-    directionalLight3.position.x = params.lightRectangleWidth;//Math.random() - 0.5;
-    directionalLight3.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
-    directionalLight3.position.z = params.lightRectangleLength;//Math.random() - 0.5;
+    let directionalLight3 = new THREE.PointLight( 0x701655, params.lightIntensity );
+    directionalLight3.position.x = params.lightRectangleWidth;
+    directionalLight3.position.y = params.lightRectangleHeight;
+    directionalLight3.position.z = params.lightRectangleLength;
     directionalLight3.position.normalize();
-    let directionalLight4 = new THREE.PointLight( 0x8781bd, 1.0 ); // flieder
-    directionalLight4.position.x = -params.lightRectangleWidth;//Math.random() - 0.5;
-    directionalLight4.position.y = params.lightRectangleHeight;//Math.random() - 0.5;
-    directionalLight4.position.z = -params.lightRectangleLength;//Math.random() - 0.5;
+    let directionalLight4 = new THREE.PointLight( 0x8781bd, params.lightIntensity );
+    directionalLight4.position.x = -params.lightRectangleWidth;
+    directionalLight4.position.y = params.lightRectangleHeight;
+    directionalLight4.position.z = -params.lightRectangleLength;
     directionalLight4.position.normalize();
 
     scene.add( directionalLight );
@@ -134,14 +127,14 @@
     renderer.setClearColor(0xcccccc, 1);
     document.body.appendChild(renderer.domElement);
     camera.position.z = 20;
+    camera.position.y = 2;
 
     generateGeometry();
 
-    lambert = new THREE.MeshStandardMaterial ( {
+    lambert = new THREE.MeshPhongMaterial ( {
       color: 0xffffff,
+      emissive: 0x0,
       specular: 0xffffff,
-      // combine: THREE.MixOperation,
-      // reflectivity: 1.5,
       shininess: 40,//40, //1000
       flatShading: true,
       side: THREE.DoubleSide,
@@ -149,15 +142,11 @@
       opacity: 1.0,
       transparent: false,
       metalness: 1.0,
-      roughness: 0.5,
-      // map: THREE.ImageUtils.loadTexture("assets/Brick-2399.jpg"),
       displacementMap: THREE.ImageUtils.loadTexture("assets/hillshade_subdiv_2_30001.jpg"),
       displacementScale: 0
     } );
 
     createGUI();
-
-    // let lambert = new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false});
 
     function generateGeometry() {
       objLoader = new THREE.OBJLoader();
@@ -171,22 +160,6 @@
         plane = object;
         scene.add( object );
       } );
-
-      // rectangle for light lightRectangle
-
-      //create a blue LineBasicMaterial
-      // var lightRectangleMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-      //
-      // var lightRectangleGeometry = new THREE.Geometry();
-      // lightRectangleGeometry.vertices.push(new THREE.Vector3( lightRectangleWidth, lightRectangleHeight, lightRectangleLength ));
-      // lightRectangleGeometry.vertices.push(new THREE.Vector3( -lightRectangleWidth, lightRectangleHeight, lightRectangleLength ));
-      // lightRectangleGeometry.vertices.push(new THREE.Vector3( lightRectangleWidth, lightRectangleHeight, -lightRectangleLength ));
-      // lightRectangleGeometry.vertices.push(new THREE.Vector3( -lightRectangleWidth, lightRectangleHeight, -lightRectangleLength ));
-      //
-      // var lightRectangleLine = new THREE.Line(geometry, material);
-      //
-      // scene.add( lightRectangleLine );
-      // console.log( lightRectangleLine.geometry );
     }
 
     function createGUI(){
@@ -194,6 +167,15 @@
 
       gui.addColor(params, 'bgColor').onChange(() => {
         renderer.setClearColor(params.bgColor, 1);
+      });
+      gui.add(params, 'ambientLightIntensity', 0.1, 10).onChange(() => {
+        ambientLight.intensity = params.ambientLightIntensity;
+      });
+      gui.add(params, 'lightIntensity', 0.1, 10).onChange(() => {
+        directionalLight.intensity = params.lightIntensity;
+        directionalLight2.intensity = params.lightIntensity;
+        directionalLight3.intensity = params.lightIntensity;
+        directionalLight4.intensity = params.lightIntensity;
       });
       gui.add(params, 'materialShininess', 0, 300).onChange(() => {
         lambert.shininess = params.materialShininess;
@@ -225,7 +207,7 @@
         lightRectangleObject3.position.z = -params.lightRectangleLength;
         lightRectangleObject4.position.z = -params.lightRectangleLength;
       });
-      gui.add(params, 'lightRectangleHeight', -3.0, 3.0).onChange(() => {
+      gui.add(params, 'lightRectangleHeight', -3.0, 100.0).onChange(() => {
         lightRectangleHeight = params.lightRectangleHeight;
         lightRectangleObject1.position.y = params.lightRectangleHeight;
         lightRectangleObject2.position.y = params.lightRectangleHeight;
@@ -234,25 +216,13 @@
       });
     }
 
-    // console.log( lambert );
-
-    // scene.add( plane );
+    let ambientLight = new THREE.AmbientLight( 0x404040 ); // soft white light
+    scene.add( ambientLight );
 
     let animate = function() {
       requestAnimationFrame(animate);
-      // plane.rotation.x += 0.0001;
-      // plane.rotation.y += 0.0001;
 
       let time = Date.now();
-
-      // lambert.shininess = Math.sin( time * 0.0005 + 5 ) * 100;
-      // lambert.displacementScale = Math.sin( time * 0.0001 + 2 ) * 2;
-      // plane.needsUpdate = true; //
-
-      // directionalLight.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
-      // directionalLight2.position.y += Math.sin( time * 0.001 + 2 ) * 0.01;
-      // directionalLight3.position.z += Math.sin( time * 0.001 + 2 ) * 0.01;
-      // directionalLight4.position.x += Math.sin( time * 0.001 + 2 ) * 0.01;
 
       directionalLight.position.x = -lightRectangleWidth;
       directionalLight.position.y = lightRectangleHeight;
@@ -269,40 +239,6 @@
       directionalLight4.position.x = lightRectangleWidth;
       directionalLight4.position.y = lightRectangleHeight;
       directionalLight4.position.z = -lightRectangleLength;
-
-
-      // directionalLight4.position.x
-      // directionalLight4.position.y
-      // directionalLight4.position.z
-
-      // let newCol = new THREE.Color (
-      //     Math.sin( time * 0.0001 + 0.2 ),
-      //     Math.sin( time * 0.0001 + 0.01 ),
-      //     Math.sin( time * 0.0011 + 0.2 )
-      //   );
-      //
-      // // let newCol2 = new THREE.Color (
-      // //     Math.sin( time * 0.001 + 1.2 ),
-      // //     Math.sin( time * 0.002 + 1.01 ),
-      // //     Math.sin( time * 0.0011 + 1 )
-      // //   );
-      // //
-      // // let newCol3 = new THREE.Color (
-      // //     Math.sin( time * 0.0001 + 0.2 ),
-      // //     Math.sin( time * 0.0003 + 1.01 ),
-      // //     Math.sin( time * 0.0111 + 1 )
-      // //   );
-      // //
-      // // let newCol4 = new THREE.Color (
-      // //     Math.sin( time * 0.0004 + 0.8 ),
-      // //     Math.sin( time * 0.0002 + 1.01 ),
-      // //     Math.sin( time * 0.0001 + 1.01 )
-      // //   );
-
-      // directionalLight.color = newCol;
-      // directionalLight2.color = newCol;
-      // directionalLight3.color = newCol;
-      // directionalLight4.color = newCol;
 
       renderer.render(scene, camera);
     };
